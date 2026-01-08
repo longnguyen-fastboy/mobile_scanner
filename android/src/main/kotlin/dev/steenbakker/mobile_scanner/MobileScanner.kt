@@ -510,8 +510,10 @@ class MobileScanner(
             val resolution = analysis.resolutionInfo!!.resolution
             val width = resolution.width.toDouble()
             val height = resolution.height.toDouble()
-            val sensorRotationDegrees = camera?.cameraInfo?.sensorRotationDegrees ?: 0
-            val portrait = sensorRotationDegrees % 180 == 0
+            val sensorRotationDegrees = 0
+            //val sensorRotationDegrees = camera?.cameraInfo?.sensorRotationDegrees ?: 0
+            val portrait = true
+            //val portrait = sensorRotationDegrees % 180 == 0
             val cameraDirection = getCameraLensFacing(camera)
 
             // Start with 'unavailable' torch state.

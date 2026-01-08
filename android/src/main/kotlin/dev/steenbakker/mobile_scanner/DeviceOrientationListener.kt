@@ -60,9 +60,9 @@ class DeviceOrientationListener(
             autoRotateObserver
         )
 
-        if (canDetectOrientation()) {
-            enable()
-        }
+        //if (canDetectOrientation()) {
+        //    enable()
+        //}
     }
 
     /**
@@ -116,7 +116,9 @@ class DeviceOrientationListener(
             return
         }
 
-        val newOrientation: PlatformChannel.DeviceOrientation
+        val newOrientation = PlatformChannel.DeviceOrientation.PORTRAIT_UP
+
+        /*val newOrientation: PlatformChannel.DeviceOrientation
 
         if (autoRotateEnabled) {
             newOrientation = when (orientation) {
@@ -128,6 +130,7 @@ class DeviceOrientationListener(
         } else {
             newOrientation = getUIOrientation()
         }
+        */
 
         if (newOrientation != lastOrientation) {
             lastOrientation = newOrientation
@@ -138,6 +141,9 @@ class DeviceOrientationListener(
     }
 
     fun getOrientation(): PlatformChannel.DeviceOrientation {
-        return lastOrientation ?: PlatformChannel.DeviceOrientation.PORTRAIT_UP
+
+        return PlatformChannel.DeviceOrientation.PORTRAIT_UP
+
+        //return lastOrientation ?: PlatformChannel.DeviceOrientation.PORTRAIT_UP
     }
 }
