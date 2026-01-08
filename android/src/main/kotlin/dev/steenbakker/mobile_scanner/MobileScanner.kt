@@ -417,13 +417,14 @@ class MobileScanner(
             // Preview
 
             // Build the preview to be shown on the Flutter texture
-            val previewBuilder = Preview.Builder()
+            val previewBuilder = Preview.Builder().setTargetRotation(Surface.ROTATION_0)
             preview = previewBuilder.build().apply { setSurfaceProvider(surfaceProvider) }
 
             // Build the analyzer to be passed on to MLKit
             val analysisBuilder = ImageAnalysis.Builder()
                 .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
                 .setOutputImageFormat(OUTPUT_IMAGE_FORMAT_YUV_420_888)
+                .setTargetRotation(Surface.ROTATION_0)
             val displayManager = activity.applicationContext.getSystemService(Context.DISPLAY_SERVICE) as DisplayManager
 
             val cameraResolution =  cameraResolutionWanted ?: Size(1920, 1080)
