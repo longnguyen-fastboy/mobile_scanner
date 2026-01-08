@@ -130,9 +130,11 @@ class MobileScanner(
             val bitmap = imageProxy.toBitmap()
             invertedBitmap = invertBitmapColors(bitmap)
             bitmap.recycle()
-            InputImage.fromBitmap(invertedBitmap, imageProxy.imageInfo.rotationDegrees)
+            InputImage.fromBitmap(invertedBitmap, 0)
+           // InputImage.fromBitmap(invertedBitmap, imageProxy.imageInfo.rotationDegrees)
         } else {
-            InputImage.fromMediaImage(mediaImage, imageProxy.imageInfo.rotationDegrees)
+            InputImage.fromMediaImage(mediaImage, 0)
+           // InputImage.fromMediaImage(mediaImage, imageProxy.imageInfo.rotationDegrees)
         }
 
         scanner?.let {
@@ -190,7 +192,8 @@ class MobileScanner(
                     val baseBitmap = invertedBitmap ?: imageProxy.toBitmap()
 
                     // Rotate the bitmap based on the camera's rotation degrees
-                    var rotatedBitmap = rotateBitmap(baseBitmap, camera?.cameraInfo?.sensorRotationDegrees ?: 90)
+                    var rotatedBitmap = rotateBitmap(baseBitmap, 0)
+                    //var rotatedBitmap = rotateBitmap(baseBitmap, camera?.cameraInfo?.sensorRotationDegrees ?: 90)
 
                     // Revert inverted image colors for the returned image (MLKit already scanned the inverted version)
                     if (invertImage) {
