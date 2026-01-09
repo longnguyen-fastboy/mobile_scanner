@@ -53,9 +53,9 @@ extension on DeviceOrientation {
   /// Maps the different device orientations to quarter turns that the
   /// preview should take in account.
   int get turns => switch (this) {
-    DeviceOrientation.portraitUp => 0,
-    DeviceOrientation.landscapeRight => 1,
-    DeviceOrientation.portraitDown => 2,
-    DeviceOrientation.landscapeLeft => 3,
+    DeviceOrientation.portraitUp => 3, //0
+    DeviceOrientation.landscapeRight => 2, // 1
+    DeviceOrientation.portraitDown => 1, // 2
+    DeviceOrientation.landscapeLeft => 0, // 3
   };
 }
