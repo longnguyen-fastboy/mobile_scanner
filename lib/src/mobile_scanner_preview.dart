@@ -22,9 +22,10 @@ class CameraPreview extends StatelessWidget {
       builder: (BuildContext context, MobileScannerState value, Widget? child) {
         return SizedBox.fromSize(
           size:
-              value.deviceOrientation.isLandscape
-                  ? value.size.flipped
-                  : value.size,
+              // value.deviceOrientation.isLandscape
+              //     ? value.size.flipped
+              //     :
+              value.size,
           child: _wrapInRotatedBox(child: controller.buildCameraView()),
         );
       },
