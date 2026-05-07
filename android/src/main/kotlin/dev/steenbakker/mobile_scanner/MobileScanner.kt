@@ -130,11 +130,9 @@ class MobileScanner(
             val bitmap = imageProxy.toBitmap()
             invertedBitmap = invertBitmapColors(bitmap)
             bitmap.recycle()
-            InputImage.fromBitmap(invertedBitmap, 0)
-           // InputImage.fromBitmap(invertedBitmap, imageProxy.imageInfo.rotationDegrees)
+            InputImage.fromBitmap(invertedBitmap, imageProxy.imageInfo.rotationDegrees)
         } else {
-            InputImage.fromMediaImage(mediaImage, 0)
-           // InputImage.fromMediaImage(mediaImage, imageProxy.imageInfo.rotationDegrees)
+            InputImage.fromMediaImage(mediaImage, imageProxy.imageInfo.rotationDegrees)
         }
 
         scanner?.let {
@@ -191,9 +189,8 @@ class MobileScanner(
                     // Get bitmap for image return. reuse inverted bitmap if available, otherwise create from imageProxy
                     val baseBitmap = invertedBitmap ?: imageProxy.toBitmap()
 
-                    // Rotate the bitmap based on the camera's rotation degrees
-                    var rotatedBitmap = rotateBitmap(baseBitmap, 0)
-                    //var rotatedBitmap = rotateBitmap(baseBitmap, camera?.cameraInfo?.sensorRotationDegrees ?: 90)
+                    // Rotate the bitmap so the saved image matches what the user sees.
+                    var rotatedBitmap = rotateBitmap(baseBitmap, imageProxy.imageInfo.rotationDegrees)
 
                     // Revert inverted image colors for the returned image (MLKit already scanned the inverted version)
                     if (invertImage) {
@@ -400,6 +397,11 @@ class MobileScanner(
         lastScanned = null
         scanner = barcodeScannerFactory(barcodeScannerOptions)
 
+        // Start the orientation listener early so it has time to detect the
+        // physical device orientation before we build the camera use cases.
+        // We only use this for a one-shot correction at startup.
+        deviceOrientationListener.start()
+
         val cameraProviderFuture = ProcessCameraProvider.getInstance(activity)
         val mainExecutor = ContextCompat.getMainExecutor(activity)
 
@@ -417,17 +419,19 @@ class MobileScanner(
             surfaceProducer = surfaceProducer ?: textureRegistry.createSurfaceProducer()
             val surfaceProvider: Preview.SurfaceProvider = createSurfaceProvider(surfaceProducer!!)
 
+            val initialRotation = deviceOrientationListener.currentSurfaceRotation
+
             // Preview
 
             // Build the preview to be shown on the Flutter texture
-            val previewBuilder = Preview.Builder().setTargetRotation(Surface.ROTATION_0)
+            val previewBuilder = Preview.Builder().setTargetRotation(initialRotation)
             preview = previewBuilder.build().apply { setSurfaceProvider(surfaceProvider) }
 
             // Build the analyzer to be passed on to MLKit
             val analysisBuilder = ImageAnalysis.Builder()
                 .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
                 .setOutputImageFormat(OUTPUT_IMAGE_FORMAT_YUV_420_888)
-                .setTargetRotation(Surface.ROTATION_0)
+                .setTargetRotation(initialRotation)
             val displayManager = activity.applicationContext.getSystemService(Context.DISPLAY_SERVICE) as DisplayManager
 
             val cameraResolution =  cameraResolutionWanted ?: Size(1920, 1080)
@@ -514,10 +518,8 @@ class MobileScanner(
             val resolution = analysis.resolutionInfo!!.resolution
             val width = resolution.width.toDouble()
             val height = resolution.height.toDouble()
-            val sensorRotationDegrees = 0
-            //val sensorRotationDegrees = camera?.cameraInfo?.sensorRotationDegrees ?: 0
-            val portrait = true
-            //val portrait = sensorRotationDegrees % 180 == 0
+            val sensorRotationDegrees = camera?.cameraInfo?.sensorRotationDegrees ?: 0
+            val portrait = sensorRotationDegrees % 180 == 0
             val cameraDirection = getCameraLensFacing(camera)
 
             // Start with 'unavailable' torch state.
@@ -531,7 +533,16 @@ class MobileScanner(
                 currentTorchState = it.torchState.value ?: -1
             }
 
-            deviceOrientationListener.start()
+            // One-shot correction: by the time the camera is bound, the
+            // orientation listener has had enough time to detect the physical
+            // rotation. Apply it once if it changed since we built the use
+            // cases, then stop the listener — we do not follow further rotation.
+            val finalRotation = deviceOrientationListener.currentSurfaceRotation
+            if (finalRotation != initialRotation) {
+                preview?.targetRotation = finalRotation
+                analysis.targetRotation = finalRotation
+            }
+            deviceOrientationListener.stop()
 
             mobileScannerStartedCallback(
                 MobileScannerStartParameters(
