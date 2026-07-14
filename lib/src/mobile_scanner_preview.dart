@@ -1,6 +1,5 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 
 /// A widget showing a live camera preview.
@@ -36,27 +35,11 @@ class CameraPreview extends StatelessWidget {
     if (kIsWeb || defaultTargetPlatform != TargetPlatform.android) {
       return child;
     }
+    // Always keep the preview in portrait so it never rotates with the device
+    // (the app is portrait-only; only the in-call screen uses landscape).
     return RotatedBox(
-      quarterTurns: controller.value.deviceOrientation.turns,
+      quarterTurns: 0,
       child: child,
     );
   }
-}
-
-/// Extension on [DeviceOrientation] that adds helpful properties for
-/// working with screen rotation and camera preview transformations.
-extension on DeviceOrientation {
-  /// Returns `true` if the device orientation is landscape (horizontal).
-  bool get isLandscape =>
-      this == DeviceOrientation.landscapeLeft ||
-      this == DeviceOrientation.landscapeRight;
-
-  /// Maps the different device orientations to quarter turns that the
-  /// preview should take in account.
-  int get turns => switch (this) {
-    DeviceOrientation.portraitUp => 0, //0
-    DeviceOrientation.landscapeRight => 1, // 1
-    DeviceOrientation.portraitDown => 2, // 2
-    DeviceOrientation.landscapeLeft => 3, // 3
-  };
 }
