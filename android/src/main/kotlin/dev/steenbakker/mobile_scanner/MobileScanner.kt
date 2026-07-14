@@ -416,9 +416,17 @@ class MobileScanner(
 
             // Preview
 
-            // Build the preview to be shown on the Flutter texture
+            // Build the preview to be shown on the Flutter texture.
+            // Pin the target rotation to portrait so the preview never rotates
+            // with the device (the app is portrait-only); otherwise the Flutter
+            // engine's crop-and-rotation handling rotates the texture when the
+            // device is turned with auto-rotate enabled.
             val previewBuilder = Preview.Builder()
-            preview = previewBuilder.build().apply { setSurfaceProvider(surfaceProvider) }
+                .setTargetRotation(Surface.ROTATION_0)
+            preview = previewBuilder.build().apply {
+                targetRotation = Surface.ROTATION_0
+                setSurfaceProvider(surfaceProvider)
+            }
 
             // Build the analyzer to be passed on to MLKit
             val analysisBuilder = ImageAnalysis.Builder()
